@@ -1,0 +1,392 @@
+﻿@{
+    ViewData["Title"] = "Simulation Results";
+}
+
+<div class="container-fluid mt-4">
+    <h1>Laundromat Simulation Results</h1>
+    <p class="lead">Comparing standard pricing vs. weekday discount strategies for a full year</p>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Monthly Revenue Comparison</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="revenueChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Monthly Profit Comparison</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="profitChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Customer Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="customerChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Machine Utilization</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="utilizationChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Yearly Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Standard Pricing Strategy</h6>
+                            <table class="table table-striped" id="standardSummaryTable">
+                                <!-- JS magic here -->
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Weekday Discount Strategy</h6>
+                            <table class="table table-striped" id="discountSummaryTable">
+                                <!-- JS magic here -->
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mb-5">
+        <a href="@Url.Action("Index")" class="btn btn-primary btn-lg">Run New Simulation</a>
+        <button id="downloadJsonBtn" class="btn btn-secondary btn-lg">Download Results as JSON</button>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Store the simulation results in a variable
+        const simulationData = @Html.Raw(ViewBag.SimulationResults);
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Parse the JSON data if it's a string
+            const data = typeof simulationData === 'string' ? JSON.parse(simulationData) : simulationData;
+            
+            // Set up the charts
+            createRevenueChart(data);
+            createProfitChart(data);
+            createCustomerChart(data);
+            createUtilizationChart(data);
+            
+            // Set up the summary tables
+            populateSummaryTables(data);
+            
+            // Set up the download button
+            setupDownloadButton(data);
+        });
+        
+        function createRevenueChart(data) {
+            const standardData = data.withoutDiscounts.monthlyData.map(m => m.totalRevenue);
+            const discountData = data.withDiscounts.monthlyData.map(m => m.totalRevenue);
+            const labels = data.withoutDiscounts.monthlyData.map(m => m.monthName);
+            
+            new Chart(document.getElementById('revenueChart'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Standard Pricing',
+                            data: standardData,
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Weekday Discounts',
+                            data: discountData,
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Monthly Revenue Comparison'
+                        }
+                    }
+                }
+            });
+        }
+        function createProfitChart(data) {
+            const standardData = data.withoutDiscounts.monthlyData.map(m => m.totalProfit);
+            const discountData = data.withDiscounts.monthlyData.map(m => m.totalProfit);
+            const labels = data.withoutDiscounts.monthlyData.map(m => m.monthName);
+
+            new Chart(document.getElementById('profitChart'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Standard Pricing',
+                            data: standardData,
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Weekday Discounts',
+                            data: discountData,
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Monthly Profit Comparison'
+                        }
+                    }
+                }
+            });
+        }
+
+        function createCustomerChart(data) {
+            const standardData = data.withoutDiscounts.monthlyData.map(m => m.totalCustomers);
+            const discountData = data.withDiscounts.monthlyData.map(m => m.totalCustomers);
+            const standardLostData = data.withoutDiscounts.monthlyData.map(m => m.totalLostCustomers);
+            const discountLostData = data.withDiscounts.monthlyData.map(m => m.totalLostCustomers);
+            const labels = data.withoutDiscounts.monthlyData.map(m => m.monthName);
+
+            new Chart(document.getElementById('customerChart'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Standard - Served',
+                            data: standardData,
+                            backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                        },
+                        {
+                            label: 'Discount - Served',
+                            data: discountData,
+                            backgroundColor: 'rgba(255, 99, 132, 0.7)',
+                        },
+                        {
+                            label: 'Standard - Lost',
+                            data: standardLostData,
+                            backgroundColor: 'rgba(54, 162, 235, 0.3)',
+                        },
+                        {
+                            label: 'Discount - Lost',
+                            data: discountLostData,
+                            backgroundColor: 'rgba(255, 99, 132, 0.3)',
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Monthly Customer Distribution'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                        },
+                        y: {
+                            stacked: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function createUtilizationChart(data) {
+            const standardData = data.withoutDiscounts.monthlyData.map(m => m.averageMachineUtilization * 100);
+            const discountData = data.withDiscounts.monthlyData.map(m => m.averageMachineUtilization * 100);
+            const labels = data.withoutDiscounts.monthlyData.map(m => m.monthName);
+
+            new Chart(document.getElementById('utilizationChart'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Standard Pricing',
+                            data: standardData,
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Weekday Discounts',
+                            data: discountData,
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Monthly Machine Utilization (%)'
+                        }
+                    }
+                }
+            });
+        }
+
+        function populateSummaryTables(data) {
+            const standardTable = document.getElementById('standardSummaryTable');
+            const discountTable = document.getElementById('discountSummaryTable');
+
+            // Create headers
+            const headerRow = `
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                    `;
+
+            standardTable.innerHTML = headerRow;
+            discountTable.innerHTML = headerRow;
+
+            // Create table bodies
+            const standardBody = document.createElement('tbody');
+            const discountBody = document.createElement('tbody');
+
+            // Format numbers
+            const formatNumber = (num) => new Intl.NumberFormat('en-US', {
+                style: 'decimal',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(num);
+
+            const standardData = data.withoutDiscounts;
+            const discountData = data.withDiscounts;
+
+            // Add rows to standard table
+            standardBody.innerHTML = `
+                        <tr>
+                            <td>Total Revenue</td>
+                            <td>$${formatNumber(standardData.totalRevenue)}</td>
+                        </tr>
+                        <tr>
+                            <td>Total Costs</td>
+                            <td>$${formatNumber(standardData.totalCosts)}</td>
+                        </tr>
+                        <tr>
+                            <td>Total Profit</td>
+                            <td>$${formatNumber(standardData.totalProfit)}</td>
+                        </tr>
+                        <tr>
+                            <td>Total Customers</td>
+                            <td>${standardData.totalCustomers}</td>
+                        </tr>
+                        <tr>
+                            <td>Lost Customers</td>
+                            <td>${standardData.totalLostCustomers}</td>
+                        </tr>
+                        <tr>
+                            <td>Lost Revenue</td>
+                            <td>$${formatNumber(standardData.totalLostRevenue)}</td>
+                        </tr>
+                        <tr>
+                            <td>Average Machine Utilization</td>
+                            <td>${formatNumber(standardData.averageMachineUtilization * 100)}%</td>
+                        </tr>
+                    `;
+
+            // Add rows to discount table
+            discountBody.innerHTML = `
+                        <tr>
+                            <td>Total Revenue</td>
+                            <td>$${formatNumber(discountData.totalRevenue)}</td>
+                        </tr>
+                        <tr>
+                            <td>Total Costs</td>
+                            <td>$${formatNumber(discountData.totalCosts)}</td>
+                        </tr>
+                        <tr>
+                            <td>Total Profit</td>
+                            <td>$${formatNumber(discountData.totalProfit)}</td>
+                        </tr>
+                        <tr>
+                            <td>Total Customers</td>
+                            <td>${discountData.totalCustomers}</td>
+                        </tr>
+                        <tr>
+                            <td>Lost Customers</td>
+                            <td>${discountData.totalLostCustomers}</td>
+                        </tr>
+                        <tr>
+                            <td>Lost Revenue</td>
+                            <td>$${formatNumber(discountData.totalLostRevenue)}</td>
+                        </tr>
+                        <tr>
+                            <td>Average Machine Utilization</td>
+                            <td>${formatNumber(discountData.averageMachineUtilization * 100)}%</td>
+                        </tr>
+                    `;
+
+            standardTable.appendChild(standardBody);
+            discountTable.appendChild(discountBody);
+        }
+
+        function setupDownloadButton(data) {
+            document.getElementById('downloadJsonBtn').addEventListener('click', function () {
+                const dataStr = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(dataBlob);
+
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'laundromat-simulation-results.json';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            });
+        }
+    </script>
+}

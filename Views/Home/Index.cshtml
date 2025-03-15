@@ -1,0 +1,32 @@
+﻿@{
+    ViewData["Title"] = "Home";
+}
+
+<div class="text-center mt-4">
+    <h1 class="display-4">Welcome to the Laundromat Business Simulator</h1>
+    <p class="lead">
+        This application simulates a student laundromat business over an entire year,
+        accounting for seasonal variations in student population.
+    </p>
+
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Features</h5>
+                    <ul class="list-group list-group-flush text-start">
+                        <li class="list-group-item">Compare standard pricing vs. weekday discount strategies</li>
+                        <li class="list-group-item">Account for seasonal variations in student population</li>
+                        <li class="list-group-item">Simulate machine utilization and customer flow</li>
+                        <li class="list-group-item">Analyze revenue, costs, and profit metrics</li>
+                        <li class="list-group-item">Visualize results with interactive charts</li>
+                        <li class="list-group-item">Export simulation data in JSON format</li>
+                    </ul>
+                </div>
+                <div class="card-footer">
+                    <a asp-controller="Simulation" asp-action="Index" class="btn btn-primary">Start a Simulation</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
