@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DiscreteSim.Wascherei.Controllers;
 
+[Route("simulation")]
 public class SimulationController : Controller
 {
     [HttpGet]
@@ -18,18 +19,23 @@ public class SimulationController : Controller
     }
 
     [HttpPost]
-    public IActionResult RunSimulation(SimulationFormModel model)
+    [Route("run")]
+    public IActionResult Run([FromBody] SimulationFormModel request)
     {
         if (!ModelState.IsValid)
         {
-            return View("Index", model);
+            return BadRequest(ModelState);
         }
 
-        var result = SimulationHelper.RunComparativeSimulation(model.Parameters, model.Year);
-
-        // Pass the JSON result to the Results view
-        ViewBag.SimulationResults = result;
-        return View("Results");
+        try
+        {
+            var result = SimulationHelper.RunComparativeSimulation(request.Parameters, request.Year);
+            return Content(result, "application/json");
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 
     [HttpPost]

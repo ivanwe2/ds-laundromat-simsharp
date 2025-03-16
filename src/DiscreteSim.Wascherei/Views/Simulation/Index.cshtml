@@ -3,99 +3,180 @@
     ViewData["Title"] = "Laundromat Simulation";
 }
 
-<div class="container mt-4">
+<div class="container-fluid mt-4">
     <h1>Laundromat Business Simulation</h1>
-    <p class="lead">Configure your simulation parameters below and run the model to see results.</p>
 
-    <form asp-action="RunSimulation" method="post">
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">Basic Parameters</h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label asp-for="Parameters.MachinesAvailable" class="form-label">Number of Machines</label>
-                        <input asp-for="Parameters.MachinesAvailable" class="form-control" type="number" min="1" />
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label asp-for="Parameters.OperatingHours" class="form-label">Operating Hours per Day</label>
-                        <input asp-for="Parameters.OperatingHours" class="form-control" type="number" min="1" max="24" />
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label asp-for="Parameters.AvgMachineUsageHours" class="form-label">Avg. Usage Time (Hours)</label>
-                        <input asp-for="Parameters.AvgMachineUsageHours" class="form-control" type="number" step="0.1" min="0.1" />
-                    </div>
+    <div class="row">
+        <!-- Left column: Parameters form -->
+        <div class="col-lg-4">
+            <div class="card mb-4 sticky-top" style="top: 20px; z-index: 1000;">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Simulation Parameters</h5>
+                    <button id="toggleForm" class="btn btn-sm btn-outline-secondary d-lg-none">
+                        <span class="collapse-text">Collapse</span>
+                        <span class="expand-text d-none">Expand</span>
+                    </button>
                 </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="Parameters.DailyCustomerBaseTarget" class="form-label">Base Daily Customer Target</label>
-                        <input asp-for="Parameters.DailyCustomerBaseTarget" class="form-control" type="number" min="1" />
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="Year" class="form-label">Simulation Year</label>
-                        <input asp-for="Year" class="form-control" type="number" min="2024" max="2100" />
-                    </div>
+                <div class="card-body form-container">
+                    <form id="simulationForm">
+                        <h6>Basic Parameters</h6>
+                        <div class="mb-3">
+                            <label for="machinesAvailable" class="form-label">Number of Machines</label>
+                            <input id="machinesAvailable" name="machinesAvailable" class="form-control" type="number" min="1" value="20" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="operatingHours" class="form-label">Operating Hours per Day</label>
+                            <input id="operatingHours" name="operatingHours" class="form-control" type="number" min="1" max="24" value="24" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="avgMachineUsageHours" class="form-label">Avg. Usage Time (Hours)</label>
+                            <input id="avgMachineUsageHours" name="avgMachineUsageHours" class="form-control" type="number" step="0.1" min="0.1" value="4.0" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="dailyCustomerBaseTarget" class="form-label">Base Daily Customer Target</label>
+                            <input id="dailyCustomerBaseTarget" name="dailyCustomerBaseTarget" class="form-control" type="number" min="1" value="100" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="year" class="form-label">Simulation Year</label>
+                            <input id="year" name="year" class="form-control" type="number" min="2024" max="2100" value="2025" />
+                        </div>
+
+                        <h6 class="mt-4">Financial Parameters</h6>
+                        <div class="mb-3">
+                            <label for="avgSpendPerStudent" class="form-label">Avg. Spend per Student</label>
+                            <input id="avgSpendPerStudent" name="avgSpendPerStudent" class="form-control" type="number" step="0.1" min="0.1" value="8.0" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="stdDevSpend" class="form-label">Std. Dev. of Spend</label>
+                            <input id="stdDevSpend" name="stdDevSpend" class="form-control" type="number" step="0.1" min="0" value="2.0" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="fixedCost" class="form-label">Daily Fixed Cost</label>
+                            <input id="fixedCost" name="fixedCost" class="form-control" type="number" step="0.1" min="0" value="100.0" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="variableCostFactor" class="form-label">Variable Cost Factor</label>
+                            <input id="variableCostFactor" name="variableCostFactor" class="form-control" type="number" step="0.01" min="0" max="1" value="0.3" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="maintenanceCost" class="form-label">Weekly Maintenance Cost</label>
+                            <input id="maintenanceCost" name="maintenanceCost" class="form-control" type="number" step="0.1" min="0" value="150.0" />
+                        </div>
+
+                        <h6 class="mt-4">Customer Behavior Parameters</h6>
+                        <div class="mb-3">
+                            <label for="weekdayBoostWithDiscount" class="form-label">Weekday Boost With Discount</label>
+                            <input id="weekdayBoostWithDiscount" name="weekdayBoostWithDiscount" class="form-control" type="number" step="0.05" min="0.5" max="2" value="1.10" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="weekendBoostWithDiscount" class="form-label">Weekend Boost With Discount</label>
+                            <input id="weekendBoostWithDiscount" name="weekendBoostWithDiscount" class="form-control" type="number" step="0.05" min="0.5" max="2" value="1.2" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="weekendBoostNoDiscount" class="form-label">Weekend Boost No Discount</label>
+                            <input id="weekendBoostNoDiscount" name="weekendBoostNoDiscount" class="form-control" type="number" step="0.05" min="0.5" max="2" value="1.4" />
+                        </div>
+
+                        <div class="mb-3">
+                            <button type="submit" id="runSimulationBtn" class="btn btn-primary w-100">Run Simulation</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
 
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">Financial Parameters</h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label asp-for="Parameters.AvgSpendPerStudent" class="form-label">Avg. Spend per Student</label>
-                        <input asp-for="Parameters.AvgSpendPerStudent" class="form-control" type="number" step="0.1" min="0.1" />
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label asp-for="Parameters.StdDevSpend" class="form-label">Std. Dev. of Spend</label>
-                        <input asp-for="Parameters.StdDevSpend" class="form-control" type="number" step="0.1" min="0" />
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label asp-for="Parameters.FixedCost" class="form-label">Daily Fixed Cost</label>
-                        <input asp-for="Parameters.FixedCost" class="form-control" type="number" step="0.1" min="0" />
-                    </div>
+        <!-- Right column: Results visualization -->
+        <div class="col-lg-8">
+            <div id="loadingIndicator" class="text-center py-5 d-none">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
                 </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="Parameters.VariableCostFactor" class="form-label">Variable Cost Factor</label>
-                        <input asp-for="Parameters.VariableCostFactor" class="form-control" type="number" step="0.01" min="0" max="1" />
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="Parameters.MaintenanceCost" class="form-label">Weekly Maintenance Cost</label>
-                        <input asp-for="Parameters.MaintenanceCost" class="form-control" type="number" step="0.1" min="0" />
-                    </div>
-                </div>
+                <p class="mt-3">Running simulation... This may take a few moments.</p>
             </div>
-        </div>
 
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">Customer Behavior Parameters</h5>
-            </div>
-            <div class="card-body">
+            <div id="resultsContainer" class="d-none">
+                <div class="alert alert-success mb-4">
+                    <strong>Simulation complete!</strong> Results are displayed below.
+                    <button id="downloadJsonBtn" class="btn btn-sm btn-outline-success float-end">
+                        Download Results as JSON
+                    </button>
+                </div>
+
                 <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label asp-for="Parameters.WeekdayBoostWithDiscount" class="form-label">Weekday Boost With Discount</label>
-                        <input asp-for="Parameters.WeekdayBoostWithDiscount" class="form-control" type="number" step="0.05" min="0.5" max="2" />
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Monthly Revenue Comparison</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="revenueChart" width="400" height="300"></canvas>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-md-4 mb-3">
-                        <label asp-for="Parameters.WeekendBoostWithDiscount" class="form-label">Weekend Boost With Discount</label>
-                        <input asp-for="Parameters.WeekendBoostWithDiscount" class="form-control" type="number" step="0.05" min="0.5" max="2" />
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Monthly Profit Comparison</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="profitChart" width="400" height="300"></canvas>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-md-4 mb-3">
-                        <label asp-for="Parameters.WeekendBoostNoDiscount" class="form-label">Weekend Boost No Discount</label>
-                        <input asp-for="Parameters.WeekendBoostNoDiscount" class="form-control" type="number" step="0.05" min="0.5" max="2" />
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Customer Distribution</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="customerChart" width="400" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Machine Utilization</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="utilizationChart" width="400" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Yearly Summary</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6>Standard Pricing Strategy</h6>
+                                        <table class="table table-striped" id="standardSummaryTable">
+                                            <!-- Will be filled by JavaScript -->
+                                        </table>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6>Weekday Discount Strategy</h6>
+                                        <table class="table table-striped" id="discountSummaryTable">
+                                            <!-- Will be filled by JavaScript -->
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <div class="text-center mb-5">
-            <button type="submit" class="btn btn-primary btn-lg">Run Simulation</button>
-        </div>
-    </form>
+    </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="~/js/simulation.js"></script>
