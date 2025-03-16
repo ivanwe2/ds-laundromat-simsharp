@@ -13,5 +13,5 @@
 ## Einheit
 - [Docs](/docs/Beleg2-DS-Wascherei-IvanRusev.md)
 - [Source Code](/src/DiscreteSim.Wascherei/Services/SimulationService.cs)
-- [Deployment](https://mc-wascherei-node.onrender.com/)
+- [Deployment](https://ds-laundromat-simsharp.onrender.com)
     - please note: may take up to a minute to spin up the server as it is a free trial version
